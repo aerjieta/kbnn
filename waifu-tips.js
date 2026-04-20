@@ -23,7 +23,6 @@
             tipsElement.classList.remove("waifu-tips-active");
         }, duration);
     }
-    window.showMessage = showTips;
     class Live2DWidget {
         constructor(options) {
             let { cdnPath } = options;
@@ -181,6 +180,7 @@
             showTips(welcomeMsg, 7000, 11);
 
             window.addEventListener("mouseover", (e) => {
+                isActive = true;
                 for (let { selector, text } of tipsData.mouseover) {
                     if (e.target.matches(selector)) {
                         const msg = randomText(text).replace("{text}", e.target.innerText);
@@ -191,6 +191,7 @@
             });
 
             window.addEventListener("click", (e) => {
+                isActive = true;
                 for (let { selector, text } of tipsData.click) {
                     if (e.target.matches(selector)) {
                         const msg = randomText(text).replace("{text}", e.target.innerText);
