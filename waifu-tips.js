@@ -23,6 +23,10 @@
             tipsElement.classList.remove("waifu-tips-active");
         }, duration);
     }
+    
+    // 将 showTips 暴露给 Live2D 底层引擎
+    window.showMessage = showTips;
+
     class Live2DWidget {
         constructor(options) {
             let { cdnPath } = options;
@@ -51,7 +55,6 @@
             } else {
                 textureName = textures;
             }
-            // 纯 CDN 加载逻辑
             loadlive2d("live2d", `${this.cdnPath}model/${textureName}/index.json`);
         }
 
@@ -84,7 +87,6 @@
         }
     }
 
-    // 工具函数保持不变...
     const toolFunctions = {
         hitokoto: {
             icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M512 240c0 114.9-114.6 208-256 208c-37.1 0-72.3-6.4-104.1-17.9c-11.9 8.7-31.3 20.6-54.3 30.6C73.6 471.1 44.7 480 16 480c-6.5 0-12.3-3.9-14.8-9.9c-2.5-6-1.1-12.8 3.4-17.4l0 0 0 0 0 0 0 0 .3-.3c.3-.3 .7-.7 1.3-1.4c1.1-1.2 2.8-3.1 4.9-5.7c4.1-5 9.6-12.4 15.2-21.6c10-16.6 19.5-38.4 21.4-62.9C17.7 326.8 0 285.1 0 240C0 125.1 114.6 32 256 32s256 93.1 256 208z"/></svg>',
@@ -121,7 +123,7 @@
                 Live2D.captureFrame = true;
             }
         },
-        info: { icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 512c141.4 0 256-114.6 256-256S397.4 0 256 0S0 114.6 0 256S114.6 512 256 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-144c-17.7 0-32-14.3-32-32s14.3-32 32-32s32 14.3 32 32s-14.3 32-32 32z"/></svg>', callback: () => { window.open("https://github.com/stevenjoezhang/live2d-widget"); } },
+        info: { icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 512c141.4 0 256-114.6 256-256S397.4 0 256 0S0 114.6 0 256S114.6 512 256 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-144c-17.7 0-32-14.3-32-32s14.3-32 32-32s32 14.3 32 32s-14.3 32-32 32z"/></svg>', callback: () => { window.open("https://xn--k7yu79d.cc.cd"); } },
         quit: {
             icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M310.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L160 210.7 54.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L114.7 256 9.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L160 301.3 265.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L205.3 256 310.6 150.6z"/></svg>',
             callback: () => {
@@ -192,6 +194,10 @@
 
             window.addEventListener("click", (e) => {
                 isActive = true;
+                
+                // 彻底屏蔽 JS 对画布的点击监听，防重叠顶掉
+                if (e.target.id === "live2d") return; 
+
                 for (let { selector, text } of tipsData.click) {
                     if (e.target.matches(selector)) {
                         const msg = randomText(text).replace("{text}", e.target.innerText);
@@ -244,7 +250,6 @@
         })();
 
         (function loadDefaultModel() {
-            // 这里保留你固定的模型
             widget.loadModel(6, 52);
             fetch(config.waifuPath)
                 .then(res => res.json())
@@ -255,7 +260,6 @@
     }
 
     window.initWidget = function (options) {
-        // 简化后的初始化参数，只需传入 options 即可
         document.body.insertAdjacentHTML("beforeend", `<div id="waifu-toggle"><span>看板娘</span></div>`);
         const toggleBtn = document.getElementById("waifu-toggle");
         toggleBtn.addEventListener("click", () => {
